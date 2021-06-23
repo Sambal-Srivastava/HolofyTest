@@ -1,6 +1,7 @@
 package com.apps.holofytest.helper
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Point
 import android.net.Uri
 import android.util.AttributeSet
@@ -15,6 +16,8 @@ import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.apps.holofytest.MainActivity
+import com.apps.holofytest.VideoViewActivity
 import com.apps.holofytest.adapters.VideoHomeAdapter
 import com.apps.holofytest.models.VideoDataModel
 import com.bumptech.glide.RequestManager
@@ -45,17 +48,21 @@ class VideoPlayerRecyclerrView : RecyclerView {
     private var frameLayout: FrameLayout? = null
     private var videoSurfaceView: PlayerView? = null
     private var videoPlayer: SimpleExoPlayer? = null
+    lateinit var mediaUrl: String
     // vars
     private var mediaObjects: ArrayList<VideoDataModel> = ArrayList<VideoDataModel>()
+    private lateinit var mContext: Context
     private var videoSurfaceDefaultHeight = 0
     private var screenDefaultHeight = 0
-//    var context: Context? = null
+    //    var context: Context? = null
     private var playPosition = -1
     private var isVideoViewAdded = false
     private var requestManager: RequestManager? = null
     // controlling playback state
     private var volumeState: VolumeState? =
         null
+    //====video  watchtime=====================================================
+    var videoWatchedTime: Long = 0;
 
     constructor(@NonNull context: Context) : super(context) {
         init(context)
@@ -68,7 +75,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
         init(context)
     }
 
-    private fun init(context: Context) {
+     fun init(context: Context) {
 //        this.context = context.applicationContext
         val display =
             (getContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
@@ -184,6 +191,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
         })
     }
 
+
     fun playVideo(isEndOfList: Boolean) {
         val targetPosition: Int
         if (!isEndOfList) {
@@ -246,7 +254,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
             DefaultDataSourceFactory(
                 context, Util.getUserAgent(context, "RecyclerView VideoPlayer")
             )
-        val mediaUrl: String = mediaObjects[targetPosition].videoURL
+        mediaUrl = mediaObjects[targetPosition].videoURL
         if (mediaUrl != null) {
             val videoSource: MediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(Uri.parse(mediaUrl))
@@ -258,6 +266,13 @@ class VideoPlayerRecyclerrView : RecyclerView {
     private val videoViewClickListener: OnClickListener = object : OnClickListener {
         override fun onClick(v: View?) {
 //            toggleVolume()
+            videoWatchedTime = videoPlayer!!.getCurrentPosition() / 1000;
+            Log.e(javaClass.simpleName, " " + videoWatchedTime.toString())
+            mContext.startActivity(
+                Intent(mContext, VideoViewActivity::class.java)
+                    .putExtra("playedTime", videoWatchedTime.toString())
+                    .putExtra("streamUrl", mediaUrl)
+            )
         }
     }
 
@@ -291,7 +306,9 @@ class VideoPlayerRecyclerrView : RecyclerView {
         if (index >= 0) {
             parent.removeViewAt(index)
             isVideoViewAdded = false
-            viewHolderParent!!.setOnClickListener(null)
+            if (viewHolderParent!= null) {
+                viewHolderParent!!.setOnClickListener(null)
+            }
         }
     }
 
@@ -350,26 +367,30 @@ class VideoPlayerRecyclerrView : RecyclerView {
         }
     }
 
-  /*  private fun animateVolumeControl() {
-        if (volumeControl != null) {
-            volumeControl!!.bringToFront()
-            if (volumeState == VolumeState.OFF) {
-                requestManager.load(R.drawable.ic_volume_off_grey_24dp)
-                    .into(volumeControl)
-            } else if (volumeState == VolumeState.ON) {
-                requestManager.load(R.drawable.ic_volume_up_grey_24dp)
-                    .into(volumeControl)
-            }
-            volumeControl!!.animate().cancel()
-            volumeControl!!.alpha = 1f
-            volumeControl!!.animate()
-                .alpha(0f)
-                .setDuration(600).startDelay = 1000
-        }
-    }*/
+    /*  private fun animateVolumeControl() {
+          if (volumeControl != null) {
+              volumeControl!!.bringToFront()
+              if (volumeState == VolumeState.OFF) {
+                  requestManager.load(R.drawable.ic_volume_off_grey_24dp)
+                      .into(volumeControl)
+              } else if (volumeState == VolumeState.ON) {
+                  requestManager.load(R.drawable.ic_volume_up_grey_24dp)
+                      .into(volumeControl)
+              }
+              volumeControl!!.animate().cancel()
+              volumeControl!!.alpha = 1f
+              volumeControl!!.animate()
+                  .alpha(0f)
+                  .setDuration(600).startDelay = 1000
+          }
+      }*/
 
-    fun setMediaObjects(mediaObjects: List<VideoDataModel>) {
+    fun setMediaObjects(
+        mediaObjects: List<VideoDataModel>,
+        mainActivity: MainActivity
+    ) {
         this.mediaObjects = mediaObjects as ArrayList<VideoDataModel>
+        mContext = mainActivity
     }
 
     companion object {

@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.apps.holofytest.adapters.VideoHomeAdapter
 import com.apps.holofytest.models.VideoDataModel
 import com.apps.holofytest.utils.Constant
-import com.apps.holofytest.utils.Resources
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
@@ -14,7 +13,6 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
@@ -39,7 +37,7 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-        rvVideos.setMediaObjects(videosList)
+        rvVideos.setMediaObjects(videosList, this)
         rvVideos.adapter = VideoHomeAdapter(videosList as List<VideoDataModel>, initGlide())
 
     }
@@ -98,5 +96,10 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
 
         if (Util.SDK_INT > 23) releasePlayer()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        rvVideos.init(this)
     }
 }

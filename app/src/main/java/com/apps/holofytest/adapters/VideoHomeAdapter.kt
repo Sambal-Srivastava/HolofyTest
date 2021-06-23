@@ -30,9 +30,7 @@ class VideoHomeAdapter(val mediaObjects: List<VideoDataModel>, val requestManage
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-       /* holder.tvVideoTitle.setText(mediaObjects.get(position).videoTitle)
-        holder.tvVideoDescription.setText(mediaObjects.get(position).videodescription)*/
-        (holder as VideoHomeAdapter.ViewHolder).onBind(mediaObjects.get(position), requestManager)
+        holder.onBind(mediaObjects.get(position), requestManager)
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
