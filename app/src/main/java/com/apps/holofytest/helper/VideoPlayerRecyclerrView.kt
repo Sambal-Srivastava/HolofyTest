@@ -1,5 +1,6 @@
 package com.apps.holofytest.helper
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Point
@@ -14,26 +15,25 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.apps.holofytest.MainActivity
 import com.apps.holofytest.VideoViewActivity
 import com.apps.holofytest.adapters.VideoHomeAdapter
-import com.apps.holofytest.models.VideoDataModel
+import com.apps.holofytest.models.VideosModel
 import com.bumptech.glide.RequestManager
 import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
+import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.trackselection.*
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.upstream.BandwidthMeter
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.Util
-import kotlin.collections.ArrayList
 
 class VideoPlayerRecyclerrView : RecyclerView {
     private enum class VolumeState {
@@ -46,12 +46,14 @@ class VideoPlayerRecyclerrView : RecyclerView {
     private var progressBar: ProgressBar? = null
     private var viewHolderParent: View? = null
     private var frameLayout: FrameLayout? = null
-    private var videoSurfaceView: PlayerView? = null
+    var videoSurfaceView: PlayerView? = null
+    var targetPosition: Int = 0
+
     private var videoPlayer: SimpleExoPlayer? = null
     lateinit var mediaUrl: String
     // vars
-    private var mediaObjects: ArrayList<VideoDataModel> = ArrayList<VideoDataModel>()
-    private lateinit var mContext: Context
+    private var mediaObjects: MutableList<VideosModel.Category> = ArrayList<VideosModel.Category>()
+    private lateinit var mContext: Activity
     private var videoSurfaceDefaultHeight = 0
     private var screenDefaultHeight = 0
     //    var context: Context? = null
@@ -64,6 +66,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
     //====video  watchtime=====================================================
     var videoWatchedTime: Long = 0;
 
+    lateinit var holder: VideoHomeAdapter.ViewHolder
     constructor(@NonNull context: Context) : super(context) {
         init(context)
     }
@@ -94,7 +97,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
         // Bind the player to the view.
         videoSurfaceView!!.useController = false
         videoSurfaceView!!.setPlayer(videoPlayer)
-        setVolumeControl(VolumeState.ON)
+        setVolumeControl(VolumeState.OFF)
         addOnScrollListener(object : OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -193,7 +196,6 @@ class VideoPlayerRecyclerrView : RecyclerView {
 
 
     fun playVideo(isEndOfList: Boolean) {
-        val targetPosition: Int
         if (!isEndOfList) {
             val startPosition: Int =
                 (getLayoutManager() as LinearLayoutManager).findFirstVisibleItemPosition()
@@ -237,7 +239,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
         val currentPosition: Int =
             targetPosition - (getLayoutManager() as LinearLayoutManager).findFirstVisibleItemPosition()
         val child: View = getChildAt(currentPosition) ?: return
-        val holder: VideoHomeAdapter.ViewHolder = child.tag as VideoHomeAdapter.ViewHolder
+        holder = child.tag as VideoHomeAdapter.ViewHolder
         if (holder == null) {
             playPosition = -1
             return
@@ -252,11 +254,11 @@ class VideoPlayerRecyclerrView : RecyclerView {
         viewHolderParent!!.setOnClickListener(videoViewClickListener)
         val dataSourceFactory: DataSource.Factory =
             DefaultDataSourceFactory(
-                context, Util.getUserAgent(context, "RecyclerView VideoPlayer")
+                context, Util.getUserAgent(context, "HolofyTest")
             )
-        mediaUrl = mediaObjects[targetPosition].videoURL
+        mediaUrl = mediaObjects.get(0).videos.get(targetPosition).sources.get(0)
         if (mediaUrl != null) {
-            val videoSource: MediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
+            val videoSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(Uri.parse(mediaUrl))
             videoPlayer!!.prepare(videoSource)
             videoPlayer!!.playWhenReady = true
@@ -268,11 +270,17 @@ class VideoPlayerRecyclerrView : RecyclerView {
 //            toggleVolume()
             videoWatchedTime = videoPlayer!!.getCurrentPosition() / 1000;
             Log.e(javaClass.simpleName, " " + videoWatchedTime.toString())
+             var options: ActivityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        mContext, holder.flMediaContainer, ViewCompat.getTransitionName(holder.flMediaContainer)!!
+             );
             mContext.startActivity(
                 Intent(mContext, VideoViewActivity::class.java)
                     .putExtra("playedTime", videoWatchedTime.toString())
                     .putExtra("streamUrl", mediaUrl)
-            )
+                    .putExtra("videoTitle", mediaObjects.get(0).videos.get(targetPosition).title)
+                    .putExtra("videoDescription", mediaObjects.get(0).videos.get(targetPosition).description)
+
+            , options.toBundle())
         }
     }
 
@@ -300,7 +308,7 @@ class VideoPlayerRecyclerrView : RecyclerView {
     }
 
     // Remove the old player
-    private fun removeVideoView(videoView: PlayerView?) {
+     fun removeVideoView(videoView: PlayerView?) {
         val parent = videoView!!.parent as? ViewGroup ?: return
         val index = parent.indexOfChild(videoView)
         if (index >= 0) {
@@ -321,12 +329,15 @@ class VideoPlayerRecyclerrView : RecyclerView {
         thumbnail!!.visibility = GONE
     }
 
-    private fun resetVideoView() {
+     fun resetVideoView() {
         if (isVideoViewAdded) {
             removeVideoView(videoSurfaceView)
             playPosition = -1
             videoSurfaceView!!.visibility = INVISIBLE
             thumbnail!!.visibility = VISIBLE
+            if (thumbnail != null) { // show the old thumbnail
+                thumbnail!!.visibility = VISIBLE
+            }
         }
     }
 
@@ -386,10 +397,10 @@ class VideoPlayerRecyclerrView : RecyclerView {
       }*/
 
     fun setMediaObjects(
-        mediaObjects: List<VideoDataModel>,
+        mediaObjects: MutableList<VideosModel.Category>,
         mainActivity: MainActivity
     ) {
-        this.mediaObjects = mediaObjects as ArrayList<VideoDataModel>
+        this.mediaObjects = mediaObjects
         mContext = mainActivity
     }
 

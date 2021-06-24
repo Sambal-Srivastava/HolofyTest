@@ -9,7 +9,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/view2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_margin="10dp"
         android:elevation="15dp"
@@ -31,6 +31,7 @@
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="15dp"
+                android:transitionName="example_transition"
                 android:focusable="true"
                 android:keepScreenOn="true"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -75,28 +76,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/video_title"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/flMediaContainer" />
-
-            <TextView
-                android:id="@+id/tvVideoDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="@string/video_short_desription"
                 android:textSize="15sp"
-                android:layout_marginBottom="10dp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvVideoTitle" />
-
+                app:layout_constraintTop_toBottomOf="@+id/flMediaContainer" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>

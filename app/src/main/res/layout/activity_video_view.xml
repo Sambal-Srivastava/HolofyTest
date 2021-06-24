@@ -10,7 +10,9 @@
         android:id="@+id/exoplayerView"
         android:layout_width="0dp"
         android:layout_height="250dp"
+        android:transitionName="example_transition"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -24,18 +26,31 @@
     </com.google.android.exoplayer2.ui.PlayerView>
 
     <TextView
-        android:id="@+id/tvCheckTime"
-        android:layout_width="match_parent"
+        android:id="@+id/tvVideoTitle"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="check"
-        android:textAlignment="center"
+        android:text="@string/video_title"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="10dp"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/exoplayerView" />
 
-        android:textColor="#000"
-        android:textSize="50dp"
+    <TextView
+        android:id="@+id/tvVideoDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/video_short_desription"
+        android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/exoplayerView"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintTop_toBottomOf="@+id/tvVideoTitle"
+        app:layout_constraintVertical_bias="0.01999998" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

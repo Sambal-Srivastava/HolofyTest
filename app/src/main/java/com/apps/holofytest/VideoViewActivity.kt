@@ -1,6 +1,5 @@
 package com.apps.holofytest
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -31,7 +30,8 @@ class VideoViewActivity : AppCompatActivity(), Player.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_view)
-        tvCheckTime.setText(intent.getStringExtra("playedTime"))
+        tvVideoTitle.setText(intent.getStringExtra("videoTitle"))
+        tvVideoDescription.setText(intent.getStringExtra("videoDescription"))
         playbackPosition = intent.getStringExtra("playedTime").toInt().toLong()*1000
         streamUrl = intent.getStringExtra("streamUrl")
     }
